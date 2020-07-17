@@ -2839,6 +2839,33 @@ FxAccountClient.prototype.createSupportTicket = function (
 };
 
 /**
+ * Update a user's ecosystem anon ID
+ *
+ * @method updateEcosystemAnonId
+ * @param {String} sessionToken sessionToken obtained from signIn
+ * @param {String} ecosystemAnonId the new Ecosystem Anonymous ID
+ * @return {Promise} A promise that will be fulfilled with an empty response object
+ */
+FxAccountClient.prototype.updateEcosystemAnonId = function (
+  sessionToken,
+  ecosystemAnonId
+) {
+  const request = this.request;
+
+  return Promise.resolve()
+    .then(function () {
+      required(sessionToken, 'sessionToken');
+
+      return hawkCredentials(sessionToken, 'sessionToken', HKDF_SIZE);
+    })
+    .then(function (creds) {
+      return request.send('/account/ecosystemAnonId', 'PUT', creds, {
+        ecosystemAnonId,
+      });
+    });
+};
+
+/**
  * Check for a required argument. Exposed for unit testing.
  *
  * @param {Value} val - value to check

@@ -177,6 +177,22 @@ export default class AuthClient {
     );
   }
 
+  private async sessionPut(
+    path: string,
+    sessionToken: string,
+    payload: object,
+    headers?: Headers
+  ) {
+    return this.hawkRequest(
+      'PUT',
+      path,
+      sessionToken,
+      tokenType.sessionToken,
+      payload,
+      headers
+    );
+  }
+
   async signUp(
     email: string,
     password: string,
@@ -1132,5 +1148,11 @@ export default class AuthClient {
       payload.expiry_grace_period = expiryGracePeriod;
     }
     return this.request('POST', '/oauth/id-token-verify', payload);
+  }
+
+  async updateEcosystemAnonId(sessionToken: string, ecosystemAnonId: string) {
+    return this.sessionPut('/account/ecosystemAnonId', sessionToken, {
+      ecosystemAnonId,
+    });
   }
 }

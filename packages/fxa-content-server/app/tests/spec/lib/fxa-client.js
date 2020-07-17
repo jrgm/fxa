@@ -1884,4 +1884,23 @@ describe('lib/fxa-client', function () {
       });
     });
   });
+
+  describe('updateEcosystemAnonId', () => {
+    it('delegates to the fxa-js-client', () => {
+      const sessionToken = 'the silence';
+      const ecosystemAnonId = 'the gold';
+      sinon.stub(realClient, 'updateEcosystemAnonId').resolves();
+
+      return client
+        .updateEcosystemAnonId(sessionToken, ecosystemAnonId)
+        .then((res) => {
+          assert.isTrue(
+            realClient.updateEcosystemAnonId.calledOnceWith(
+              sessionToken,
+              ecosystemAnonId
+            )
+          );
+        });
+    });
+  });
 });

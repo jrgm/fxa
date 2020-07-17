@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const assert = require('chai').assert;
+const sinon = require('sinon');
 const Environment = require('../addons/environment');
 
 describe('account', function () {
@@ -604,5 +605,43 @@ describe('account', function () {
       RequestMocks.account
     );
     assert.isArray(result.subscriptions);
+  });
+
+  it('#can update the ecosystem anon id', function () {
+    let account, xhrOpen, xhrSend;
+    const ecosystemAnonId = 'its amazing';
+
+    return accountHelper
+      .newVerifiedAccount()
+      .then(function (acc) {
+        account = acc;
+        xhrOpen = sinon.spy(env.xhr.prototype, 'open');
+        xhrSend = sinon.spy(env.xhr.prototype, 'send');
+
+        return respond(
+          client.updateEcosystemAnonId(
+            account.signIn.sessionToken,
+            ecosystemAnonId
+          ),
+          RequestMocks.updateEcosystemAnonId
+        );
+      })
+      .then(function (res) {
+        assert.ok(res);
+        assert.equal(xhrOpen.args[0][0], 'PUT', 'method is correct');
+        assert.include(
+          xhrOpen.args[0][1],
+          '/account/ecosystemAnonId',
+          'path is correct'
+        );
+        assert.equal(
+          xhrSend.args[0][0],
+          JSON.stringify({ ecosystemAnonId }),
+          'params are correct'
+        );
+
+        xhrOpen.restore();
+        xhrSend.restore();
+      });
   });
 });
