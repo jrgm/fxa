@@ -190,6 +190,7 @@ export default class AuthClient {
       style?: string;
       verificationMethod?: string;
       metricsContext?: MetricsContext;
+      ecosystemAnonId?: string;
     } = {}
   ) {
     const credentials = await crypto.getCredentials(email, password);
@@ -225,6 +226,7 @@ export default class AuthClient {
       verificationMethod?: string;
       unblockCode?: string;
       metricsContext?: MetricsContext;
+      ecosystemAnonId?: string;
     } = {}
   ): Promise<{
     uid: string;

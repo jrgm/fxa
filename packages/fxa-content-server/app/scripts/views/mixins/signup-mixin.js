@@ -29,9 +29,11 @@ export default {
         // This is important for the infamous signin-from-signup feature.
         this.logFlowEvent('attempt', 'signup');
 
+        const ecosystemAnonId = 'UPDATE_THIS';
         const options = {
           resume: this.getStringifiedResumeToken(account),
           verificationMethod: 'email-otp',
+          ecosystemAnonId,
         };
 
         return this.user.signUpAccount(account, password, this.relier, options);

@@ -243,4 +243,19 @@ describe('signIn', function () {
         assert.ok(resp);
       }, assert.fail);
   });
+
+  it('#ecosystemAnonId', function () {
+    var email = 'test' + new Date().getTime() + '@restmail.net';
+    var password = 'iliketurtles';
+    const ecosystemAnonId = 'tony the tiger';
+
+    return respond(client.signUp(email, password), RequestMocks.signUp).then(
+      function () {
+        return respond(
+          client.signIn(email, password, { ecosystemAnonId }),
+          RequestMocks.signIn
+        );
+      }
+    );
+  });
 });

@@ -115,6 +115,8 @@ FxAccountClient.VERSION = VERSION;
  *     @param {Number} options.metricsContext.utmMedium acquisition medium
  *     @param {Number} options.metricsContext.utmSource traffic source
  *     @param {Number} options.metricsContext.utmTerm search terms
+ *   @param {String} [options.ecosystemAnonId]
+ *   User's account ecosystem anonymous identifier (AET)
  * @return {Promise} A promise that will be fulfilled with JSON `xhr.responseText` of the request
  */
 FxAccountClient.prototype.signUp = function (email, password, options) {
@@ -175,6 +177,10 @@ FxAccountClient.prototype.signUp = function (email, password, options) {
         if (options.verificationMethod) {
           data.verificationMethod = options.verificationMethod;
         }
+
+        if (options.ecosystemAnonId) {
+          data.ecosystemAnonId = options.ecosystemAnonId;
+        }
       }
 
       return self.request
@@ -225,6 +231,8 @@ FxAccountClient.prototype.signUp = function (email, password, options) {
  *     @param {Number} options.metricsContext.utmTerm search terms
  *   @param {String} [options.unblockCode]
  *   Login unblock code.
+ *   @param {String} [options.ecosystemAnonId]
+ *   User's account ecosystem anonymous identifier (AET)
  * @return {Promise} A promise that will be fulfilled with JSON `xhr.responseText` of the request
  */
 FxAccountClient.prototype.signIn = function (email, password, options) {
@@ -280,6 +288,10 @@ FxAccountClient.prototype.signIn = function (email, password, options) {
 
       if (options.verificationMethod) {
         data.verificationMethod = options.verificationMethod;
+      }
+
+      if (options.ecosystemAnonId) {
+        data.ecosystemAnonId = options.ecosystemAnonId;
       }
 
       return self.request.send(endpoint, 'POST', null, data).then(

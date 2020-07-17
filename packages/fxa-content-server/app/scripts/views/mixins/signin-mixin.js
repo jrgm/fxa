@@ -63,13 +63,15 @@ export default {
           account.discardSessionToken();
         }
 
+        const ecosystemAnonId = 'UPDATE_THIS';
         return this.user.signInAccount(account, password, this.relier, {
           // a resume token is passed in to allow
           // unverified account or session users to complete
           // email verification.
           resume: this.getStringifiedResumeToken(account),
           unblockCode: options.unblockCode,
-          verificationMethod: verificationMethod,
+          verificationMethod,
+          ecosystemAnonId,
         });
       })
       .then((account) => {

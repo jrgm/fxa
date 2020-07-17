@@ -268,6 +268,10 @@ FxaClientWrapper.prototype = {
         signInOptions.verificationMethod = options.verificationMethod;
       }
 
+      if (options.ecosystemAnonId) {
+        signInOptions.ecosystemAnonId = options.ecosystemAnonId;
+      }
+
       setMetricsContext(signInOptions, options);
 
       return client
@@ -419,6 +423,10 @@ FxaClientWrapper.prototype = {
 
     if (options.verificationMethod) {
       signUpOptions.verificationMethod = options.verificationMethod;
+    }
+
+    if (options.ecosystemAnonId) {
+      signUpOptions.ecosystemAnonId = options.ecosystemAnonId;
     }
 
     if (relier.has('style')) {

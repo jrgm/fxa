@@ -280,6 +280,29 @@ describe('lib/fxa-client', function () {
           );
         });
     });
+
+    it('passes along an optional `ecosystemAnonId`', function () {
+      const ecosystemAnonId = 'out loud hey hey';
+
+      sinon.stub(realClient, 'signUp').callsFake(function () {
+        return Promise.resolve({});
+      });
+
+      return client
+        .signUp(email, password, relier, {
+          ecosystemAnonId,
+        })
+        .then(function () {
+          assert.isTrue(
+            realClient.signUp.calledWith(trim(email), password, {
+              keys: false,
+              redirectTo: REDIRECT_TO,
+              service: SYNC_SERVICE,
+              ecosystemAnonId,
+            })
+          );
+        });
+    });
   });
 
   describe('recoveryEmailStatus', function () {
@@ -737,6 +760,28 @@ describe('lib/fxa-client', function () {
           );
         });
     });
+
+    it('passes along an optional `metricsContext`', function () {
+      const ecosystemAnonId = 'out loud hey hey';
+
+      sinon.stub(realClient, 'signIn').callsFake(function () {
+        return Promise.resolve({});
+      });
+
+      return client
+        .signIn(email, password, relier, {
+          ecosystemAnonId,
+        })
+        .then(function () {
+          assert.isTrue(realClient.signIn.calledWith(trim(email), password), {
+            keys: false,
+            ecosystemAnonId,
+            reason: SignInReasons.SIGN_IN,
+            service: SYNC_SERVICE,
+          });
+        });
+    });
+    ``;
   });
 
   describe('sessionReauth', () => {

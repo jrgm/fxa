@@ -358,6 +358,7 @@ const Account = Backbone.Model.extend(
      *   authenticationMethods,
      *   authenticatorAssuranceLevel,
      *   profileChangedAt,
+     *   ecosystemAnonId,
      * }
      */
     accountProfile() {
@@ -587,6 +588,7 @@ const Account = Backbone.Model.extend(
               skipCaseError: true,
               unblockCode: options.unblockCode,
               verificationMethod: VerificationMethods.EMAIL_OTP,
+              ecosystemAnonId: options.ecosystemAnonId,
             };
 
             // `originalLoginEmail` is specified when the account's primary email has changed.

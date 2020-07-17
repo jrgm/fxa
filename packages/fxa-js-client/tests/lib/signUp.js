@@ -305,4 +305,19 @@ describe('signUp', function () {
     );
     assert.deepEqual(response, {});
   });
+
+  it('#ecosystemAnonId', function () {
+    var email = 'test' + new Date().getTime() + '@restmail.net';
+    var password = 'iliketurtles';
+    var opts = {
+      ecosystemAnonId: 'fevers and mirrors',
+    };
+
+    return respond(
+      client.signUp(email, password, opts),
+      RequestMocks.signUp
+    ).then(function (res) {
+      assert.ok(res.uid);
+    });
+  });
 });
