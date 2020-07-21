@@ -587,6 +587,10 @@ const Account = Backbone.Model.extend(
               skipCaseError: true,
               unblockCode: options.unblockCode,
               verificationMethod: VerificationMethods.EMAIL_OTP,
+              relierWantsKeys: relier && relier.wantsKeys(),
+              relierIsSync: relier && relier.isSync(),
+              relierService: relier && relier.get('service'),
+              relierRedirectTo: relier && relier.get('redirectTo'),
             };
 
             // `originalLoginEmail` is specified when the account's primary email has changed.
@@ -599,34 +603,18 @@ const Account = Backbone.Model.extend(
 
             if (!sessionToken) {
               // We need to do a completely fresh login.
-              return this._fxaClient.signIn(
-                email,
-                password,
-                relier,
-                signinOptions
-              );
+              return this._fxaClient.signIn(email, password, signinOptions);
             } else {
               // We have an existing sessionToken, try to re-authenticate it.
               return this._fxaClient
-                .sessionReauth(
-                  sessionToken,
-                  email,
-                  password,
-                  relier,
-                  signinOptions
-                )
+                .sessionReauth(sessionToken, email, password, signinOptions)
                 .catch((err) => {
                   // The session was invalid, do a fresh login.
                   if (!AuthErrors.is(err, 'INVALID_TOKEN')) {
                     throw err;
                   }
                   this.discardSessionToken();
-                  return this._fxaClient.signIn(
-                    email,
-                    password,
-                    relier,
-                    signinOptions
-                  );
+                  return this._fxaClient.signIn(email, password, signinOptions);
                 });
             }
           } else if (sessionToken) {

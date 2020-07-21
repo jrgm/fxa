@@ -34,14 +34,14 @@ const CONTEXTS_REQUIRE_KEYS = [
 
 /**
  * Check if keys should be requested
- * @param {Object} relier - relier being signed in to.
+ * @param {Boolean} relierWantsKeys
  * @param {String} sessionTokenContext - context of the current session
  * token.
  * @returns {Boolean}
  */
-function wantsKeys(relier, sessionTokenContext) {
+function wantsKeys(relierWantsKeys, sessionTokenContext) {
   return (
-    relier.wantsKeys() || _.contains(CONTEXTS_REQUIRE_KEYS, sessionTokenContext)
+    relierWantsKeys || _.contains(CONTEXTS_REQUIRE_KEYS, sessionTokenContext)
   );
 }
 
@@ -99,9 +99,9 @@ function createClientDelegate(method) {
   };
 }
 
-function getUpdatedSessionData(email, relier, accountData, options = {}) {
-  var sessionTokenContext = options.sessionTokenContext;
-  if (!sessionTokenContext && relier.isSync()) {
+function getUpdatedSessionData(email, accountData, options = {}) {
+  let sessionTokenContext = options.sessionTokenContext;
+  if (!sessionTokenContext && options.relierIsSync) {
     sessionTokenContext = Constants.SESSION_TOKEN_USED_FOR_SYNC;
   }
 
@@ -115,7 +115,7 @@ function getUpdatedSessionData(email, relier, accountData, options = {}) {
     verified: accountData.verified || false,
   };
 
-  if (wantsKeys(relier, sessionTokenContext)) {
+  if (wantsKeys(options.relierWantsKeys, sessionTokenContext)) {
     updatedSessionData.unwrapBKey = accountData.unwrapBKey;
     updatedSessionData.keyFetchToken = accountData.keyFetchToken;
   }
@@ -212,7 +212,6 @@ FxaClientWrapper.prototype = {
    * @method signIn
    * @param {String} originalEmail
    * @param {String} password
-   * @param {Relier} relier
    * @param {Object} [options]
    *   @param {String} [options.metricsContext] - context metadata for use in
    *                   flow events
@@ -226,75 +225,77 @@ FxaClientWrapper.prototype = {
    *   @param {Boolean} [options.skipCaseError] - if set to true, INCORRECT_EMAIL_CASE
    *                   errors will be returned to be handled locally instead of automatically
    *                   being retried in the fxa-js-client.
+   *   @param {Boolean} [options.relierWantsKeys]
+   *   @param {String} [options.relierService]
+   *   @param {String} [options.relierRedirectTo]
+   *   @param {Boolean} [options.relierIsSync]
    *   @param {String} [options.unblockCode] - Unblock code.
    * @returns {Promise}
    */
-  signIn: withClient(
-    (client, originalEmail, password, relier, options = {}) => {
-      var email = trim(originalEmail);
+  signIn: withClient((client, originalEmail, password, options = {}) => {
+    var email = trim(originalEmail);
 
-      var signInOptions = {
-        keys: wantsKeys(relier),
-        reason: options.reason || SignInReasons.SIGN_IN,
-      };
+    var signInOptions = {
+      keys: wantsKeys(options.relierWantsKeys),
+      reason: options.reason || SignInReasons.SIGN_IN,
+    };
 
-      // `service` is sent on signIn to notify users when a new service
-      // has been attached to their account.
-      if (relier.has('service')) {
-        signInOptions.service = relier.get('service');
-      }
-
-      if (relier.has('redirectTo')) {
-        signInOptions.redirectTo = relier.get('redirectTo');
-      }
-
-      if (options.unblockCode) {
-        signInOptions.unblockCode = options.unblockCode;
-      }
-
-      if (options.resume) {
-        signInOptions.resume = options.resume;
-      }
-
-      if (options.skipCaseError) {
-        signInOptions.skipCaseError = options.skipCaseError;
-      }
-
-      if (options.originalLoginEmail) {
-        signInOptions.originalLoginEmail = options.originalLoginEmail;
-      }
-
-      if (options.verificationMethod) {
-        signInOptions.verificationMethod = options.verificationMethod;
-      }
-
-      setMetricsContext(signInOptions, options);
-
-      return client
-        .signIn(email, password, signInOptions)
-        .then(function (accountData) {
-          if (
-            !accountData.verified &&
-            // eslint-disable-next-line no-prototype-builtins
-            !accountData.hasOwnProperty('verificationReason')
-          ) {
-            // Set a default verificationReason to `SIGN_UP` to allow
-            // staged rollouts of servers. To handle calls to the
-            // legacy /account/login that lacks a verificationReason,
-            // assume SIGN_UP if the account is not verified.
-            accountData.verificationReason = VerificationReasons.SIGN_UP;
-
-            if (signInOptions.verificationMethod) {
-              accountData.verificationMethod = signInOptions.verificationMethod;
-            } else {
-              accountData.verificationMethod = VerificationMethods.EMAIL;
-            }
-          }
-
-          return getUpdatedSessionData(email, relier, accountData, options);
-        });
+    // `relierService` is sent on signIn to notify users when a new service
+    // has been attached to their account.
+    if (options.relierService) {
+      signInOptions.service = options.relierService;
     }
-  ),
+
+    if (options.relierRedirectTo) {
+      signInOptions.redirectTo = options.relierRedirectTo;
+    }
+
+    if (options.unblockCode) {
+      signInOptions.unblockCode = options.unblockCode;
+    }
+
+    if (options.resume) {
+      signInOptions.resume = options.resume;
+    }
+
+    if (options.skipCaseError) {
+      signInOptions.skipCaseError = options.skipCaseError;
+    }
+
+    if (options.originalLoginEmail) {
+      signInOptions.originalLoginEmail = options.originalLoginEmail;
+    }
+
+    if (options.verificationMethod) {
+      signInOptions.verificationMethod = options.verificationMethod;
+    }
+
+    setMetricsContext(signInOptions, options);
+
+    return client
+      .signIn(email, password, signInOptions)
+      .then(function (accountData) {
+        if (
+          !accountData.verified &&
+          // eslint-disable-next-line no-prototype-builtins
+          !accountData.hasOwnProperty('verificationReason')
+        ) {
+          // Set a default verificationReason to `SIGN_UP` to allow
+          // staged rollouts of servers. To handle calls to the
+          // legacy /account/login that lacks a verificationReason,
+          // assume SIGN_UP if the account is not verified.
+          accountData.verificationReason = VerificationReasons.SIGN_UP;
+
+          if (signInOptions.verificationMethod) {
+            accountData.verificationMethod = signInOptions.verificationMethod;
+          } else {
+            accountData.verificationMethod = VerificationMethods.EMAIL;
+          }
+        }
+
+        return getUpdatedSessionData(email, accountData, options);
+      });
+  }),
 
   /**
    * Re-authenticate a user.
@@ -303,7 +304,6 @@ FxaClientWrapper.prototype = {
    * @param {String} sessionToken
    * @param {String} originalEmail
    * @param {String} password
-   * @param {Relier} relier
    * @param {Object} [options]
    *   @param {String} [options.metricsContext] - context metadata for use in
    *                   flow events
@@ -319,23 +319,27 @@ FxaClientWrapper.prototype = {
    *                   by the user, if different from the one used for login.
    *   @param {String} [options.verificationMethod] - the method to use to verify the
    *                   session, if it is not already verified.
+   *   @param {Boolean} [options.relierWantsKeys]
+   *   @param {String} [options.relierService]
+   *   @param {String} [options.relierRedirectTo]
+   *   @param {Boolean} [options.relierIsSync]
    * @returns {Promise}
    */
   sessionReauth: withClient(
-    (client, sessionToken, originalEmail, password, relier, options = {}) => {
+    (client, sessionToken, originalEmail, password, options = {}) => {
       const email = trim(originalEmail);
 
       const reauthOptions = {
-        keys: wantsKeys(relier),
+        keys: wantsKeys(options.relierWantsKeys),
         reason: options.reason || SignInReasons.SIGN_IN,
       };
 
-      if (relier.has('service')) {
-        reauthOptions.service = relier.get('service');
+      if (options.relierService) {
+        reauthOptions.service = options.relierService;
       }
 
-      if (relier.has('redirectTo')) {
-        reauthOptions.redirectTo = relier.get('redirectTo');
+      if (options.relierRedirectTo) {
+        reauthOptions.redirectTo = options.relierRedirectTo;
       }
 
       if (options.unblockCode) {
@@ -364,7 +368,7 @@ FxaClientWrapper.prototype = {
         .sessionReauth(sessionToken, email, password, reauthOptions)
         .then((accountData) => {
           accountData.sessionToken = sessionToken;
-          return getUpdatedSessionData(email, relier, accountData, options);
+          return getUpdatedSessionData(email, accountData, options);
         });
     }
   ),
@@ -375,7 +379,6 @@ FxaClientWrapper.prototype = {
    * @method signUp
    * @param {String} originalEmail
    * @param {String} password
-   * @param {Relier} relier
    * @param {Object} [options]
    *   @param {String} [options.metricsContext] - Metrics context metadata
    *   @param {Boolean} [options.preVerified] - is the user preVerified
@@ -386,27 +389,26 @@ FxaClientWrapper.prototype = {
    *                   which the session token is being created.
    *                   Defaults to the relier's context.
    *   @param {String} [options.style] - Specify the style for emails
+   *   @param {Boolean} [options.relierWantsKeys]
+   *   @param {String} [options.relierService]
+   *   @param {String} [options.relierRedirectTo]
+   *   @param {Boolean} [options.relierIsSync]
+   *   @param {String} [options.relierStyle]
    * @returns {Promise}
    */
-  signUp: withClient(function (
-    client,
-    originalEmail,
-    password,
-    relier,
-    options = {}
-  ) {
+  signUp: withClient(function (client, originalEmail, password, options = {}) {
     var email = trim(originalEmail);
 
     var signUpOptions = {
-      keys: wantsKeys(relier),
+      keys: wantsKeys(options.relierWantsKeys),
     };
 
-    if (relier.has('service')) {
-      signUpOptions.service = relier.get('service');
+    if (options.relierService) {
+      signUpOptions.service = options.relierService;
     }
 
-    if (relier.has('redirectTo')) {
-      signUpOptions.redirectTo = relier.get('redirectTo');
+    if (options.relierRedirectTo) {
+      signUpOptions.redirectTo = options.relierRedirectTo;
     }
 
     if (options.preVerified) {
@@ -421,8 +423,8 @@ FxaClientWrapper.prototype = {
       signUpOptions.verificationMethod = options.verificationMethod;
     }
 
-    if (relier.has('style')) {
-      signUpOptions.style = relier.get('style');
+    if (options.relierStyle) {
+      signUpOptions.style = options.relierStyle;
     }
 
     setMetricsContext(signUpOptions, options);
@@ -430,14 +432,13 @@ FxaClientWrapper.prototype = {
     return client
       .signUp(email, password, signUpOptions)
       .then((accountData) =>
-        getUpdatedSessionData(email, relier, accountData, options)
+        getUpdatedSessionData(email, accountData, options)
       );
   }),
 
   /**
    * Re-sends a verification code to the account's recovery email address.
    *
-   * @param {Object} relier being signed into.
    * @param {String} sessionToken sessionToken obtained from signIn
    * @param {Object} [options={}] Options
    *   @param {String} [options.resume]
@@ -446,20 +447,23 @@ FxaClientWrapper.prototype = {
    *   example.
    *   @param {String} [options.style]
    *   Specify the style for the email
+   *   @param {String} [options.relierService]
+   *   @param {String} [options.relierRedirectTo]
+   *   @param {String} [options.relierStyle]
    * @return {Promise} A promise that will be fulfilled with JSON `xhr.responseText` of the request
    */
-  signUpResend: withClient((client, relier, sessionToken, options = {}) => {
+  signUpResend: withClient((client, sessionToken, options = {}) => {
     var clientOptions = {
-      redirectTo: relier.get('redirectTo'),
-      service: relier.get('service'),
+      redirectTo: options.relierRedirectTo,
+      service: options.relierService,
     };
 
     if (options.resume) {
       clientOptions.resume = options.resume;
     }
 
-    if (relier.has('style')) {
-      clientOptions.style = relier.get('style');
+    if (options.relierStyle) {
+      clientOptions.style = options.relierStyle;
     }
 
     return client.recoveryEmailResendCode(sessionToken, clientOptions);
@@ -518,20 +522,21 @@ FxaClientWrapper.prototype = {
    *
    * @method passwordReset
    * @param {String} originalEmail
-   * @param {Relier} relier
    * @param {Object} [options]
    *   @param {String} [options.metricsContext] - context metadata for use in
    *                   flow events
    *   @param {String} [options.resume] - Resume token, passed in the
    *                   verification link if the user must verify their email.
+   *   @param {String} [options.relierService]
+   *   @param {String} [options.relierRedirectTo]
    * @return {Promise} resolves when complete
    */
-  passwordReset: withClient((client, originalEmail, relier, options = {}) => {
+  passwordReset: withClient((client, originalEmail, options = {}) => {
     var email = trim(originalEmail);
 
     var clientOptions = {
-      redirectTo: relier.get('redirectTo'),
-      service: relier.get('service'),
+      redirectTo: options.relierRedirectTo,
+      service: options.relierService,
     };
 
     if (options.resume) {
@@ -553,23 +558,24 @@ FxaClientWrapper.prototype = {
    *
    * @param {String} originalEmail
    * @param {String} passwordForgotToken
-   * @param {Object} relier
    * @param {Object} [options={}] Options
    *   @param {String} [options.resume]
    *   Opaque url-encoded string that will be included in the verification link
    *   as a querystring parameter, useful for continuing an OAuth flow for
    *   example.
+   *   @param {String} [options.relierService]
+   *   @param {String} [options.relierRedirectTo]
    * @return {Promise} resolves when complete
    */
   passwordResetResend: withClient(
-    (client, originalEmail, passwordForgotToken, relier, options = {}) => {
+    (client, originalEmail, passwordForgotToken, options = {}) => {
       var email = trim(originalEmail);
 
       // the linters complain if this is defined in the call to
       // passwordForgotResendCode
       var clientOptions = {
-        redirectTo: relier.get('redirectTo'),
-        service: relier.get('service'),
+        redirectTo: options.relierRedirectTo,
+        service: options.relierService,
       };
 
       if (options.resume) {
@@ -593,19 +599,21 @@ FxaClientWrapper.prototype = {
    * @param {String} newPassword
    * @param {String} token
    * @param {String} code
-   * @param {Object} relier
    * @param {Object} [options={}]
    *   @param {String} [options.emailToHashWith]
    *   If specified, the password is hashed with this email address, otherwise
    *   the user's password is hashed with their current email.
+   *   @param {Boolean} [options.relierWantsKeys]
+   *   @param {Boolean} [options.relierIsSync]
    * @return {Promise} resolves when complete
    */
   completePasswordReset: withClient(
-    (client, originalEmail, newPassword, token, code, relier, options = {}) => {
+    (client, originalEmail, newPassword, token, code, options = {}) => {
       const email = trim(originalEmail);
+      const { relierIsSync, relierWantsKeys } = options;
 
       var accountResetOptions = {
-        keys: wantsKeys(relier),
+        keys: wantsKeys(relierWantsKeys),
         sessionToken: true,
       };
 
@@ -631,7 +639,10 @@ FxaClientWrapper.prototype = {
           );
         })
         .then((accountData) => {
-          return getUpdatedSessionData(email, relier, accountData);
+          return getUpdatedSessionData(email, accountData, {
+            relierWantsKeys,
+            relierIsSync,
+          });
         });
     }
   ),
@@ -665,7 +676,8 @@ FxaClientWrapper.prototype = {
    * @param {String} newPassword
    * @param {String} sessionToken
    * @param {String} sessionTokenContext
-   * @param {Relier} relier
+   * @param {Boolean} relierWantsKeys
+   * @param {Boolean} relierIsSync
    * @returns {Promise} resolves with new session information on success.
    */
   changePassword: withClient(
@@ -676,17 +688,20 @@ FxaClientWrapper.prototype = {
       newPassword,
       sessionToken,
       sessionTokenContext,
-      relier
+      relierWantsKeys,
+      relierIsSync
     ) => {
       var email = trim(originalEmail);
       return client
         .passwordChange(email, oldPassword, newPassword, {
-          keys: wantsKeys(relier, sessionTokenContext),
+          keys: wantsKeys(relierWantsKeys, sessionTokenContext),
           sessionToken: sessionToken,
         })
         .then((accountData = {}) => {
-          return getUpdatedSessionData(email, relier, accountData, {
-            sessionTokenContext: sessionTokenContext,
+          return getUpdatedSessionData(email, accountData, {
+            sessionTokenContext,
+            relierIsSync,
+            relierWantsKeys,
           });
         });
     }
@@ -1246,7 +1261,8 @@ FxaClientWrapper.prototype = {
    * @param {String} newPassword - New password for user
    * @param {String} recoveryKeyId - The recoveryKeyId that mapped to original recovery key
    * @param {String} kB - Wrap new password with this kB
-   * @param {String} relier - Relier to sign-in
+   * @param {Boolean} relierWantsKeys
+   * @param {Boolean} relierIsSync
    * @returns {Promise} resolves with response when complete.
    */
   resetPasswordWithRecoveryKey: withClient(
@@ -1257,7 +1273,8 @@ FxaClientWrapper.prototype = {
       newPassword,
       recoveryKeyId,
       kB,
-      relier
+      relierWantsKeys,
+      relierIsSync
     ) => {
       const keys = { kB };
       return client
@@ -1270,7 +1287,10 @@ FxaClientWrapper.prototype = {
           { keys: true, sessionToken: true }
         )
         .then((accountData) => {
-          return getUpdatedSessionData(email, relier, accountData);
+          return getUpdatedSessionData(email, accountData, {
+            relierWantsKeys,
+            relierIsSync,
+          });
         });
     }
   ),
