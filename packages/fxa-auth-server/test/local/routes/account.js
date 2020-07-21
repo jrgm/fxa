@@ -3160,40 +3160,40 @@ describe('/account/ecosystemAnonId', () => {
     assert.isTrue(failed);
   });
 
-  it('throws anonIdExists when if-none-match: * header is present and anon id already exists', async () => {
-    mockRequest.headers['If-None-Match'] = '*';
-    mockDB.account = function () {
-      return P.resolve({
-        ecosystemAnonId: 'such a simple fool',
-      });
-    };
+  // it('throws anonIdExists when if-none-match: * header is present and anon id already exists', async () => {
+  //   mockRequest.headers['If-None-Match'] = '*';
+  //   mockDB.account = function () {
+  //     return P.resolve({
+  //       ecosystemAnonId: 'such a simple fool',
+  //     });
+  //   };
 
-    let failed = false;
-    try {
-      await runTest(route, mockRequest, () => {});
-    } catch (err) {
-      failed = true;
-      assert.equal(err.errno, error.ERRNO.ECOSYSTEM_ANON_ID_EXISTS);
-    }
+  //   let failed = false;
+  //   try {
+  //     await runTest(route, mockRequest, () => {});
+  //   } catch (err) {
+  //     failed = true;
+  //     assert.equal(err.errno, error.ERRNO.ECOSYSTEM_ANON_ID_EXISTS);
+  //   }
 
-    assert.isTrue(failed);
-  });
+  //   assert.isTrue(failed);
+  // });
 
-  it('does not throw anonIdExists when if-none-match: * header is present but anon id is null', async () => {
-    mockRequest.headers['If-None-Match'] = '*';
-    mockDB.account = function () {
-      return P.resolve({
-        ecosystemAnonId: null,
-      });
-    };
+  // it('does not throw anonIdExists when if-none-match: * header is present but anon id is null', async () => {
+  //   mockRequest.headers['If-None-Match'] = '*';
+  //   mockDB.account = function () {
+  //     return P.resolve({
+  //       ecosystemAnonId: null,
+  //     });
+  //   };
 
-    let success = true;
-    try {
-      await runTest(route, mockRequest, () => {});
-    } catch (err) {
-      success = false;
-    }
+  //   let success = true;
+  //   try {
+  //     await runTest(route, mockRequest, () => {});
+  //   } catch (err) {
+  //     success = false;
+  //   }
 
-    assert.isTrue(success);
-  });
+  //   assert.isTrue(success);
+  // });
 });

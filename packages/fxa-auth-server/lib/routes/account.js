@@ -1494,7 +1494,7 @@ module.exports = (
       method: 'PUT',
       path: '/account/ecosystemAnonId',
       apidoc: {
-        errors: [error.invalidScopes, error.anonIdExists],
+        errors: [error.invalidScopes, error.anonIdModifiedSince],
       },
       options: {
         auth: {
@@ -1512,8 +1512,10 @@ module.exports = (
 
         const { uid, scope } = request.auth.credentials;
         const { ecosystemAnonId } = request.payload;
-        const noneMatchHeader = request.headers['If-None-Match'];
         const scopeSet = ScopeSet.fromArray(scope);
+        const unmodifiedSince = Date.parse(
+          request.headers['If-Unmodified-Since']
+        );
 
         if (!scopeSet.contains('profile:ecosystem_anon_id:write')) {
           throw error.invalidScopes(scopeSet);
@@ -1521,10 +1523,13 @@ module.exports = (
 
         await customs.check(request, uid, 'updateEcosystemAnonId');
 
-        if (noneMatchHeader === '*') {
-          const account = await db.account();
-          if (account.ecosystemAnonId != null) {
-            throw error.anonIdExists();
+        if (!isNaN(unmodifiedSince)) {
+          // const account = await db.account();
+          // account.ecosystemAnonId
+          const ageOfAnonId = 1234567;
+
+          if (ageOfAnonId > unmodifiedSince) {
+            throw error.anonIdModifiedSince(new Date(unmodifiedSince));
           }
         }
 

@@ -203,13 +203,13 @@ AppError.authError = function authError(err) {
   );
 };
 
-AppError.anonIdExists = function anonIdExists(err) {
+AppError.anonIdModifiedSince = function anonIdModifiedSince(err) {
   return new AppError(
     {
       code: 412,
       error: 'Precondition Failed',
       errno: 106,
-      message: 'Attempted to update non-null Ecosystem Anon ID',
+      message: `Attempted to set Ecosystem Anon ID when a newer one exists`,
     },
     {
       cause: err,

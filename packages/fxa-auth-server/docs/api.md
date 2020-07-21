@@ -1178,7 +1178,7 @@ by the following errors
 - `code: 400, errno: 163`:
   Token does not contain the correct scope.
 - `code: 412, errno: 190`:
-  Attempted to update non-null Ecosystem Anon ID.
+  Attempted to set Ecosystem Anon ID when a newer one exists.
 
 ### Devices and sessions
 

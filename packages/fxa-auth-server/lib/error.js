@@ -102,7 +102,7 @@ const ERRNO = {
   PAYMENT_FAILED: 186,
   SUBSCRIPTION_ALREADY_EXISTS: 187,
   UNKNOWN_SUBSCRIPTION_FOR_SOURCE: 188,
-  ECOSYSTEM_ANON_ID_EXISTS: 190,
+  ECOSYSTEM_ANON_ID_MODIFIED_SINCE: 190,
 
   SERVER_BUSY: 201,
   FEATURE_NOT_ENABLED: 202,
@@ -1311,12 +1311,12 @@ AppError.invalidOrExpiredOtpCode = () => {
   });
 };
 
-AppError.anonIdExists = () => {
+AppError.anonIdModifiedSince = () => {
   return new AppError({
     code: 412,
     error: 'Precondition Failed',
-    errno: ERRNO.ECOSYSTEM_ANON_ID_EXISTS,
-    message: 'Attempted to update non-null Ecosystem Anon ID',
+    errno: ERRNO.ECOSYSTEM_ANON_ID_MODIFIED_SINCE,
+    message: `Attempted to set Ecosystem Anon ID when a newer one exists`,
   });
 };
 

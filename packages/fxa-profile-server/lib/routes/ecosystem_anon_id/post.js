@@ -16,14 +16,14 @@ const AUTH_SERVER_URL =
 const updateAuthServer = function (
   credentials,
   ecosystemAnonId,
-  noneMatchHeader
+  unmodifiedSinceValue
 ) {
   const headers = {
     Authorization: 'Bearer ' + credentials.token,
   };
 
-  if (noneMatchHeader) {
-    headers['If-None-Match'] = noneMatchHeader;
+  if (unmodifiedSinceValue) {
+    headers['If-Unmodified-Since'] = unmodifiedSinceValue;
   }
 
   return new Promise((resolve, reject) => {
@@ -57,7 +57,7 @@ const updateAuthServer = function (
 
           if (body.code === 412 || body.errno === 190) {
             logger.info('request.auth_server.precondition_fail', body);
-            return reject(new AppError.unauthorized(body.message));
+            return reject(new AppError.anonIdModifiedSince());
           }
 
           logger.error('request.auth_server.fail', body);
@@ -99,23 +99,25 @@ module.exports = {
       })
       .then(async (res) => {
         const uid = req.auth.credentials.user;
-        const noneMatchHeader = req.headers['if-none-match'];
-        const existingAnonId = res.result.ecosystemAnonId;
+        // const existingAnonId = res.result.ecosystemAnonId;
+        const ageOfAnonId = 1234567;
+        const unmodifiedSinceValue = req.headers['if-unmodified-since'];
+        const unmodifiedSince = Date.parse(unmodifiedSinceValue);
 
         logger.info('activityEvent', {
           event: 'ecosystemAnonId.post',
           uid: uid,
         });
 
-        if (noneMatchHeader === '*' && existingAnonId != null) {
-          throw AppError.anonIdExists();
+        if (!isNaN(unmodifiedSince) && ageOfAnonId > unmodifiedSince) {
+          throw new AppError.anonIdModifiedSince();
         }
 
         await req.server.methods.profileCache.drop(uid);
         await updateAuthServer(
           req.auth.credentials,
           req.payload.ecosystemAnonId,
-          noneMatchHeader
+          unmodifiedSinceValue
         );
 
         notifyProfileUpdated(uid);
