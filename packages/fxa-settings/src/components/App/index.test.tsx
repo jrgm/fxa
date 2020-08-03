@@ -7,7 +7,7 @@ import { render, act } from '@testing-library/react';
 import { MockedProvider, MockLink } from '@apollo/client/testing';
 import '@testing-library/jest-dom/extend-expect';
 import App from '.';
-import FlowEvent from '../../lib/flow-event';
+import * as Metrics from '../../lib/metrics';
 
 // workaround for https://github.com/apollographql/apollo-client/issues/6559
 const mockLink = new MockLink([], false);
@@ -53,7 +53,7 @@ it('redirects to /get_flow when flow data is not present', async () => {
   const DEVICE_ID = 'yoyo';
   const BEGIN_TIME = 123456;
   const FLOW_ID = 'abc123';
-  const flowInit = jest.spyOn(FlowEvent, 'init');
+  const flowInit = jest.spyOn(Metrics, 'init');
   const updatedAppProps = Object.assign(appProps, {
     queryParams: {
       device_id: DEVICE_ID,
@@ -71,9 +71,9 @@ it('redirects to /get_flow when flow data is not present', async () => {
   });
 
   expect(flowInit).toHaveBeenCalledWith({
-    device_id: DEVICE_ID,
-    flow_id: FLOW_ID,
-    flow_begin_time: BEGIN_TIME,
+    deviceId: DEVICE_ID,
+    flowId: FLOW_ID,
+    flowBeginTime: BEGIN_TIME,
   });
   expect(window.location.replace).not.toHaveBeenCalled();
 });
