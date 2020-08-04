@@ -6,9 +6,28 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import AppLayout from '.';
+import {
+  createHistory,
+  createMemorySource,
+  LocationProvider,
+} from '@reach/router';
 
-it('renders the app with children', () => {
-  const { getByTestId } = render(
+function renderWithRouter(
+  ui,
+  { route = '/', history = createHistory(createMemorySource(route)) } = {}
+) {
+  return {
+    ...render(<LocationProvider history={history}>{ui}</LocationProvider>),
+    history,
+  };
+}
+
+it('renders the app with children', async () => {
+  const {
+    container,
+    history: { navigate },
+    getByTestId,
+  } = renderWithRouter(
     <AppLayout
       avatarUrl={null}
       primaryEmail="user@example.com"
@@ -17,6 +36,7 @@ it('renders the app with children', () => {
       <p data-testid="test-child">Hello, world!</p>
     </AppLayout>
   );
+  await navigate('/beta/settings');
   expect(getByTestId('app')).toBeInTheDocument();
   expect(getByTestId('content-skip')).toBeInTheDocument();
   expect(getByTestId('header')).toBeInTheDocument();

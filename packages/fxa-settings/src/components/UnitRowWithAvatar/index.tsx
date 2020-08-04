@@ -4,12 +4,17 @@
 
 import React from 'react';
 import Avatar from '../Avatar';
+import { Link, useLocation } from '@reach/router';
 
 type UnitRowWithAvatarProps = {
   avatarUrl: string | null;
+  queryParams?: string;
 };
 
-export const UnitRowWithAvatar = ({ avatarUrl }: UnitRowWithAvatarProps) => {
+export const UnitRowWithAvatar = ({
+  avatarUrl,
+  queryParams,
+}: UnitRowWithAvatarProps) => {
   const ctaText = avatarUrl ? 'Change' : 'Add';
 
   return (
@@ -25,13 +30,13 @@ export const UnitRowWithAvatar = ({ avatarUrl }: UnitRowWithAvatarProps) => {
       </div>
       <div className="unit-row-actions">
         <div>
-          <a
+          <Link
             className="cta-neutral transition-standard"
             data-testid="unit-row-with-avatar-route"
-            href="#"
+            to={'/beta/settings/avatar/change' + queryParams}
           >
             {ctaText}
-          </a>
+          </Link>
         </div>
       </div>
     </div>

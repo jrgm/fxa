@@ -37,6 +37,7 @@ describe('UnitRow', () => {
         header="Display name"
         headerValue="Fred Flinstone"
         route="/display_name"
+        queryParams=""
       />
     );
 

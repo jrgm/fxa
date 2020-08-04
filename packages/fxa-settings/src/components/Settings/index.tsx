@@ -9,8 +9,11 @@ import UnitRowWithAvatar from '../UnitRowWithAvatar';
 import Modal from '../Modal';
 import AlertBar from '../AlertBar';
 import { AccountData } from '../AccountDataHOC/gql';
+import { useLocation, RouteComponentProps } from '@reach/router';
 
-export const Settings = ({ account }: { account: AccountData }) => {
+export const Settings = ({
+  account,
+}: { account: AccountData } & RouteComponentProps) => {
   const [modalRevealed, revealModal, hideModal] = useBooleanState();
   const [alertBarRevealed, revealAlertBar, hideAlertBar] = useBooleanState();
 
@@ -19,6 +22,8 @@ export const Settings = ({ account }: { account: AccountData }) => {
     hideModal();
     revealAlertBar();
   }, [hideModal, revealAlertBar]);
+
+  const location = useLocation();
 
   const modalHeaderId = 'modal-header-verify-email';
   const modalDescId = 'modal-desc-verify-email';
@@ -46,14 +51,18 @@ export const Settings = ({ account }: { account: AccountData }) => {
         <h2 className="font-header font-bold ml-4 mb-4">Profile</h2>
 
         <div className="bg-white tablet:rounded-xl shadow">
-          <UnitRowWithAvatar avatarUrl={account.avatarUrl} />
+          <UnitRowWithAvatar
+            avatarUrl={account.avatarUrl}
+            queryParams={location.search}
+          />
 
           <hr className="unit-row-hr" />
 
           <UnitRow
             header="Display name"
             headerValue={account.displayName}
-            route="#"
+            route="/beta/settings/display_name"
+            queryParams={location.search}
           />
 
           <hr className="unit-row-hr" />
@@ -62,7 +71,8 @@ export const Settings = ({ account }: { account: AccountData }) => {
             header="Password"
             headerValueClassName="tracking-wider"
             headerValue="••••••••••••••••••"
-            route="#"
+            route="/beta/settings/change_password"
+            queryParams={location.search}
           >
             <p className="text-grey-400 text-xs mobileLandscape:mt-3">
               Created {account.passwordCreated}

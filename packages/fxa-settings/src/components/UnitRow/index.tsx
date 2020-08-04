@@ -5,6 +5,7 @@
 import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { useFocusOnTriggeringElementOnClose } from '../../lib/hooks';
+import { Link, RouteComponentProps } from '@reach/router';
 
 type UnitRowProps = {
   header: string;
@@ -14,6 +15,7 @@ type UnitRowProps = {
   children?: React.ReactNode;
   headerValueClassName?: string;
   route?: string;
+  queryParams?: string | null;
   revealModal?: () => void;
   modalRevealed?: boolean;
 };
@@ -26,15 +28,15 @@ export const UnitRow = ({
   header,
   headerValue,
   route,
+  queryParams,
   children,
   headerValueClassName,
   noHeaderValueText = 'None',
   noHeaderValueCtaText = 'Add',
   revealModal,
   modalRevealed,
-}: UnitRowProps) => {
+}: UnitRowProps & RouteComponentProps) => {
   const ctaText = headerValue ? 'Change' : noHeaderValueCtaText;
-
   const modalTriggerElement = useRef<HTMLButtonElement>(null);
   useFocusOnTriggeringElementOnClose(modalRevealed, modalTriggerElement);
 
@@ -56,13 +58,13 @@ export const UnitRow = ({
       <div className="unit-row-actions">
         <div>
           {route && (
-            <a
+            <Link
               className="cta-neutral transition-standard"
               data-testid="unit-row-route"
-              href={route}
+              to={route + queryParams}
             >
               {ctaText}
-            </a>
+            </Link>
           )}
 
           {revealModal && (

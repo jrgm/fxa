@@ -7,6 +7,7 @@ import HeaderLockup from '../HeaderLockup';
 import ContentSkip from '../ContentSkip';
 import Nav from '../Nav';
 import Footer from 'fxa-react/components/Footer';
+import { Router } from '@reach/router';
 
 type AppLayoutProps = {
   avatarUrl: string | null;
@@ -31,7 +32,9 @@ export const AppLayout = ({
     />
     <div className="max-w-screen-desktopXl w-full mx-auto flex flex-1 tablet:px-20 desktop:px-12">
       <div className="hidden desktop:block desktop:flex-2">
-        <Nav {...{ hasSubscription, primaryEmail }} />
+        <Router primary={false} basepath="/beta/settings">
+          <Nav path="/" {...{ hasSubscription, primaryEmail }} />
+        </Router>
       </div>
       <main id="main" data-testid="main" className="desktop:flex-7">
         {children}
