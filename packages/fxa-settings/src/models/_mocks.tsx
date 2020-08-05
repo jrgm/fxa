@@ -3,9 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MockedResponse } from '@apollo/client/testing';
-import { GET_ACCOUNT, AccountData } from './gql';
+import { Account } from '.';
+import { GET_INITIAL_STATE } from '../operations/queries';
 
-export const MOCK_ACCOUNT: AccountData = {
+export const MOCK_ACCOUNT: Account = {
   uid: 'abc123',
   displayName: 'John Dope',
   avatarUrl: 'http://avatars.com/y2k',
@@ -29,7 +30,7 @@ export const MOCK_ACCOUNT: AccountData = {
 
 export const MOCK_GET_ACCOUNT: MockedResponse = {
   request: {
-    query: GET_ACCOUNT,
+    query: GET_INITIAL_STATE,
   },
   result: {
     data: {

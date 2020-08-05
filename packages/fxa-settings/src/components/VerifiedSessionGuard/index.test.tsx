@@ -7,11 +7,12 @@ import { InMemoryCache } from '@apollo/client';
 import '@testing-library/jest-dom/extend-expect';
 import { render, act, wait, screen } from '@testing-library/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
-import { VerifiedSessionGuard, GET_SESSION } from '.';
+import { VerifiedSessionGuard } from '.';
+import { GET_SESSION_VERIFIED } from '../../operations/queries';
 
 const verifiedCache = new InMemoryCache();
 verifiedCache.writeQuery({
-  query: GET_SESSION,
+  query: GET_SESSION_VERIFIED,
   data: {
     session: {
       verified: true,
@@ -21,7 +22,7 @@ verifiedCache.writeQuery({
 
 const unverifiedCache = new InMemoryCache();
 unverifiedCache.writeQuery({
-  query: GET_SESSION,
+  query: GET_SESSION_VERIFIED,
   data: {
     session: {
       verified: false,

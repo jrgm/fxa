@@ -9,3 +9,5 @@ export interface QueryParams {
   flow_id?: string;
   flow_begin_time?: number;
 }
+
+export type hexstring = string;

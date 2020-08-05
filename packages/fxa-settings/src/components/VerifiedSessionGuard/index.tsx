@@ -5,14 +5,7 @@
 import React from 'react';
 import { gql, useQuery } from '@apollo/client';
 import sentryMetrics from 'fxa-shared/lib/sentry';
-
-export const GET_SESSION = gql`
-  query GetSession {
-    session {
-      verified
-    }
-  }
-`;
+import { GET_SESSION_VERIFIED } from '../../operations/queries';
 
 export const VerifiedSessionGuard = ({
   guard,
@@ -21,7 +14,9 @@ export const VerifiedSessionGuard = ({
   guard: React.ReactElement;
   children: React.ReactElement;
 }) => {
-  const { error, data } = useQuery(GET_SESSION, { fetchPolicy: 'cache-only' });
+  const { error, data } = useQuery(GET_SESSION_VERIFIED, {
+    fetchPolicy: 'cache-only',
+  });
 
   if (error || !data) {
     // idk if this'll ever happen irl

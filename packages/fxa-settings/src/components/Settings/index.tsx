@@ -8,9 +8,9 @@ import UnitRow from '../UnitRow';
 import UnitRowWithAvatar from '../UnitRowWithAvatar';
 import Modal from '../Modal';
 import AlertBar from '../AlertBar';
-import { AccountData } from '../AccountDataHOC/gql';
+import { Account } from '../../models/Account';
 
-export const Settings = ({ account }: { account: AccountData }) => {
+export const Settings = ({ account }: { account: Account }) => {
   const [modalRevealed, revealModal, hideModal] = useBooleanState();
   const [alertBarRevealed, revealAlertBar, hideAlertBar] = useBooleanState();
 
